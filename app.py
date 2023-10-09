@@ -1,6 +1,7 @@
 import os
+import jwt
 from db import mongo
-from flask import Flask
+from flask import Flask, jsonify, request
 from flask_pymongo import PyMongo
 from schema import schema
 from strawberry.flask.views import GraphQLView
@@ -17,12 +18,14 @@ class StrawberryView(GraphQLView):
 
 app.add_url_rule(
     "/graphql",
-    view_func=GraphQLView.as_view("graphql_view", schema=schema),
+    view_func=GraphQLView.as_view("graphql_view", schema=schema,graphiql=True),
 )
 
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
+
+
 
 if __name__=='__main__':
     app.run(debug=True)

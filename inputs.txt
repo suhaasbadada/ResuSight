@@ -1,0 +1,191 @@
+UPLOAD RESUME MUTATION
+
+INPUT-1
+mutation {
+  upload_resume(resume: {
+    username: "suhaasbadada",
+    email: "suhaasbadada@gmail.com"
+    full_name: "Suhaas Rao Badada",
+    links: [
+      { website_name: "LinkedIn", link: "linkedin.com/in/suhaas-badada" },
+      { website_name: "GitHub", link: "github.com/suhaasbadada" }
+    ],
+    job_title: "Graduate Engineer Trainee - Advanced Analytics Intern",
+    education: [
+      {
+        institute: "Vellore Institute of Technology",
+        type_of_study: "B.Tech, Computer Science Engineering",
+        start_date: { month: "07", year: 2019 },
+        end_date: { month: "07", year: 2023 },
+        percentage: 8.69,
+        place: "Vellore",
+        country: "India"
+      },
+      {
+        institute: "FIITJEE",
+        type_of_study: "Junior College",
+        start_date: { month: "05", year: 2017 },
+        end_date: { month: "05", year: 2019 },
+        percentage: 89.7,
+        place: "Hyderabad",
+        country: "India"
+      },
+      {
+        institute: "Vikas The Concept School",
+        type_of_study: "High School",
+        start_date: { month: "04", year: 2016 },
+        end_date: { month: "04", year: 2017 },
+        percentage: 10.0,
+        place: "Hyderabad",
+        country: "India"
+      }
+    ],
+    skills: [
+      "Machine Learning",
+      "Data Science",
+      "Python",
+      "Flask",
+      "PowerBI",
+      "Azure ML Studio",
+      "Angular",
+      ".NET",
+      "C++",
+      "C#",
+      "SQL",
+      "Numpy",
+      "Pandas",
+      "Prompt Engineering"
+    ],
+    experience: [
+      {
+        company_name: "Becton Dickinson, Bangalore",
+        place: "Bangalore",
+        country: "India",
+        start_date: { month: "01", year: 2023 },
+        end_date: { month: "06", year: 2023 },
+        job_titles: [
+          "Graduate Engineer Trainee",
+          "Advanced Analytics Intern"
+        ],
+        job_description: "Developed a customer engagement analytics platform catering to European clients, facilitating data-driven insights and personalized product recommendations derived from individual customer engagement levels."
+      },
+      {
+        company_name: "Becton Dickinson, Bangalore",
+        place: "Bangalore",
+        country: "India",
+        start_date: { month: "05", year: 2022 },
+        end_date: { month: "07", year: 2022 },
+        job_titles: [
+          "Graduate Engineer Trainee",
+          "SDE Intern"
+        ],
+        job_description: "Designed and implemented a user-friendly portal enabling administrators to execute SQL queries for in-depth analysis of the formulary database."
+      }
+    ],
+    projects: [
+      {
+        project_name: "Am I Okay (MLH Hoya Hacks Winner)",
+        tech_used: [
+          "Python",
+          "Machine Learning",
+          "Flask",
+          "HTML",
+          "CSS",
+          "Google Cloud API"
+        ],
+        description: "Engineered a Machine Learning-based software that predicts diseases based on symptoms, provides details, recommends medication, and also offers the location of the nearest top-rated super specialty hospitals that treat it."
+      },
+      {
+        project_name: "Mood2Munch",
+        tech_used: [
+          "Python",
+          "NLP",
+          "Flask",
+          "HTML",
+          "CSS"
+        ],
+        description: "Developed a website that gives users food recommendations based on their emotional state, and additionally recommends restaurants based on previously visited restaurants."
+      },
+      {
+        project_name: "VocabCards",
+        tech_used: [
+          "Angular",
+          "ASP.NET",
+          "SQL",
+          "MaterialUI",
+          "Firebase",
+          "Azure"
+        ],
+        description: "Personalized and user-friendly learning tool that helps users expand their vocabulary where words are showcased as flashcards. Includes color schemes and progress counter to encourage users to stay motivated. Aimed to help GRE aspirants or anyone willing to expand their vocabulary."
+      }
+    ],
+    languages: [
+      "English",
+      "French"
+    ],
+    publications: [
+      {
+        title: "Predicting Cardiovascular Disease (CVD) Risk Over Time Utilizing Multifaceted Health and Lifestyle Parameters",
+        published_date: { month: "2023", year: 2023 },
+        published_at: "International Journal of Science and Research"
+      }
+    ]
+  }) {
+    message
+    user {
+      username
+      email
+    }
+  }
+}
+
+REGISTER USER MUTATION
+mutation {
+  register_user(user_input: {
+    username: "john_doe",
+    email: "john.doe@example.com",
+    password: "password123"
+  }) {
+    message
+  }
+}
+
+LOGIN USER MUTATION
+mutation {
+  login_user(username: "john_doe", password: "password123") {
+    message
+  }
+}
+
+
+GET USER DETAILS QUERY
+query {
+  get_my_details(username: "suhaas badada") {
+    username
+    email
+    message
+  }
+}
+
+
+
+
+@app.route('/graphql',methods=['POST'])
+def graphql_view():
+    if request.method=='POST':
+        data=request.get_json()
+        query=data.get('query')
+        variables=data.get('variables',{})
+
+        try:
+            token=request.headers.get('Authorization','').replace('Bearer','')
+
+            payload=jwt.decode(token,"secret",algorithms=['HS256'])
+
+            result = StrawberryView(schema=schema, context={'user': payload.get('user')}).handle(query, variables)
+
+            return jsonify(result)
+        except (jwt.ExpiredSignatureError,jwt.DecodeError):
+            return jsonify({'errors': [{'message': 'Invalid or expired token'}]}), 401
+
+
