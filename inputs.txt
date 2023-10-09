@@ -160,12 +160,69 @@ mutation {
 
 GET USER DETAILS QUERY
 query {
-  get_my_details(username: "suhaas badada") {
+  get_my_details(username: "john_doe") {
     username
     email
-    message
+    email
+    resume {
+      username
+      email
+      full_name
+      links {
+        website_name
+        link
+      }
+      job_title
+      education {
+        institute
+        type_of_study
+        start_date {
+          month
+          year
+        }
+        end_date {
+          month
+          year
+        }
+        percentage
+        place
+        country
+      }
+      skills
+      experience {
+        company_name
+        place
+        country
+        start_date {
+          month
+          year
+        }
+        end_date {
+          month
+          year
+        }
+        job_titles
+        job_description
+      }
+      projects {
+        project_name
+        tech_used
+        description
+      }
+      languages
+      publications {
+        title
+        published_date {
+          month
+          year
+        }
+        published_at
+      }
+    }
+    
   }
 }
+
 
 
 

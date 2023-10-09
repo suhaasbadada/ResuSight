@@ -93,6 +93,63 @@ class Resume:
     languages: Optional[List[str]] = strawberry.UNSET
     publications: Optional[List[Publication]] = strawberry.UNSET
 
+####################################################################
+@strawberry.type
+class LinksOutput:
+    website_name: str
+    link: str
+@strawberry.type
+class MonthYearOutput:
+    month: str
+    year: int
+
+# Experience
+@strawberry.type
+class ExperienceOutput:
+    company_name: str
+    place: str
+    country: str
+    start_date: MonthYearOutput
+    end_date: MonthYearOutput
+    job_titles: List[str]
+    job_description: str
+
+#Projects
+@strawberry.type
+class ProjectsOutput:
+    project_name: str
+    tech_used: List[str]
+    description: str
+@strawberry.type
+class PublicationOutput:
+    title: str
+    published_date: MonthYearOutput
+    published_at: str
+
+@strawberry.type
+class EducationOutput:
+    institute: str
+    type_of_study: str
+    start_date: MonthYearOutput
+    end_date: MonthYearOutput
+    percentage: float
+    place: str
+    country: str
+@strawberry.type
+class ResumeOutput:
+    _id: str
+    username: str
+    email: str
+    full_name: str
+    links: List[LinksOutput]
+    job_title: Optional[str] = strawberry.UNSET 
+    education: List[EducationOutput]
+    skills: List[str]
+    experience: Optional[List[ExperienceOutput]] = strawberry.UNSET
+    projects: List[ProjectsOutput]
+    languages: Optional[List[str]] = strawberry.UNSET
+    publications: Optional[List[PublicationOutput]] = strawberry.UNSET
+
 @strawberry.type
 class UploadResponse:
     message: str
@@ -103,6 +160,7 @@ class UserDetails:
     username: Optional[str] = strawberry.UNSET
     email: Optional[str] = strawberry.UNSET
     message: str
+    resume: Optional[ResumeOutput] = strawberry.UNSET
 
 
 @strawberry.type
@@ -164,7 +222,60 @@ class Query:
         user_resume = mongo.db.resumes_collection.find_one({'username':username})
         print(user_resume)
         if user and user_resume:
-            return UserDetails(username=user['username'], email=user['email'],message="there is an existing resume")
+            resume_output = ResumeOutput(
+                            _id=str(user_resume['_id']),
+                            username=user_resume['username'],
+                            email=user_resume['email'],
+                            full_name=user_resume['full_name'],
+                            links=[
+                                Links(website_name=link['website_name'], link=link['link'])
+                                for link in user_resume['links']
+                            ],
+                            job_title=user_resume.get('job_title', None),
+                            education=[
+                                Education(
+                                    institute=edu['institute'],
+                                    type_of_study=edu['type_of_study'],
+                                    start_date=MonthYear(month=edu['start_date']['month'], year=edu['start_date']['year']),
+                                    end_date=MonthYear(month=edu['end_date']['month'], year=edu['end_date']['year']),
+                                    percentage=edu['percentage'],
+                                    place=edu['place'],
+                                    country=edu['country']
+                                )
+                                for edu in user_resume['education']
+                            ],
+                            skills=user_resume['skills'],
+                            experience=[
+                                Experience(
+                                    company_name=exp['company_name'],
+                                    place=exp['place'],
+                                    country=exp['country'],
+                                    start_date=MonthYear(month=exp['start_date']['month'], year=exp['start_date']['year']),
+                                    end_date=MonthYear(month=exp['end_date']['month'], year=exp['end_date']['year']),
+                                    job_titles=exp['job_titles'],
+                                    job_description=exp['job_description']
+                                )
+                                for exp in user_resume.get('experience', [])
+                            ],
+                            projects=[
+                                Projects(
+                                    project_name=proj['project_name'],
+                                    tech_used=proj['tech_used'],
+                                    description=proj['description']
+                                )
+                                for proj in user_resume['projects']
+                            ],
+                            languages=user_resume.get('languages', []),
+                            publications=[
+                                Publication(
+                                    title=pub['title'],
+                                    published_date=MonthYear(month=pub['published_date']['month'], year=pub['published_date']['year']),
+                                    published_at=pub['published_at']
+                                )
+                                for pub in user_resume.get('publications', [])
+                            ]
+                        )
+            return UserDetails(username=user['username'], email=user['email'],message="there is an existing resume",resume=resume_output)
         if user:
             return UserDetails(username=user['username'], email=user['email'],message="yet to be uploaded")
         return UserDetails(username=None,email=None,message="Not a registered user")
