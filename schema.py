@@ -303,4 +303,13 @@ class Query:
             return UserDetails(username=user['username'], email=user['email'],message="yet to be uploaded")
         return UserDetails(username=None,email=None,message="Not a registered user")
 
+    @strawberry.field
+    def generate_interview_questions(info: Info, username: str) -> List[str]:
+        resume=mongo.db.resumes_collection.find_one({'username':username})
+        print(type(resume))
+        if resume:
+            return ['q1','q2','q3'] # use openai api functions here to get questions
+        return []
+        
+
 schema=strawberry.Schema(query=Query, mutation=Mutation, config=StrawberryConfig(auto_camel_case=False))
