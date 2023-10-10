@@ -1,10 +1,12 @@
 import os
-import jwt
+import strawberry
 from db import mongo
 from flask import Flask, jsonify, request
 from flask_pymongo import PyMongo
-from schema import schema
 from strawberry.flask.views import GraphQLView
+from strawberryGQL.queries import Query
+from strawberryGQL.mutations import Mutation
+from strawberry.schema.config import StrawberryConfig
 
 app=Flask(__name__)
 
@@ -13,13 +15,16 @@ app.config['MONGO_URI']=os.getenv('MONGO_URL')+os.getenv('MONGO_DB_NAME')
 mongo.init_app(app)
 
 
+schema=strawberry.Schema(query=Query, mutation=Mutation, config=StrawberryConfig(auto_camel_case=False))
 class StrawberryView(GraphQLView):
     schema = schema
+
 
 app.add_url_rule(
     "/graphql",
     view_func=GraphQLView.as_view("graphql_view", schema=schema,graphiql=True),
 )
+
 
 @app.route('/')
 def hello_world():
