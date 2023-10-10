@@ -2,7 +2,7 @@ UPLOAD RESUME MUTATION
 
 INPUT-1
 mutation {
-  upload_resume(resume: {
+  upload_or_update_resume(resume: {
     username: "suhaasbadada",
     email: "suhaasbadada@gmail.com"
     full_name: "Suhaas Rao Badada",
@@ -55,6 +55,20 @@ mutation {
       "Numpy",
       "Pandas",
       "Prompt Engineering"
+    ],
+    certifications:[
+      {
+        certification_name: "Python For Data Science and Machine Learning Bootcamp",
+        issue_date: {month: "06",year:2023},
+        issuing_organization: "Udemy",
+        url:"https://www.udemy.com/certificate/UC-3014b25b-4aae-4f07-8921-f80dbe586b8c/"
+      },
+      {
+        certification_name: "Building Applications with Angular and ASP.NET Core",
+        issue_date: {month: "08",year:2022},
+        issuing_organization: "Udemy",
+        url:"https://www.udemy.com/certificate/UC-7f30281f-8e37-45a5-89f7-3aca2116427d/"
+      }
     ],
     experience: [
       {
@@ -121,7 +135,9 @@ mutation {
     ],
     languages: [
       "English",
-      "French"
+      "Hindi",
+      "Telugu",
+      "Kannada"
     ],
     publications: [
       {
@@ -157,10 +173,9 @@ mutation {
   }
 }
 
-
 GET USER DETAILS QUERY
-query {
-  get_my_details(username: "john_doe") {
+query{
+  get_my_details(username: "suhaasbadada") {
     username
     email
     email
@@ -189,6 +204,15 @@ query {
         country
       }
       skills
+      certifications{
+        certification_name
+        issue_date{
+          month
+          year
+        }
+       issuing_organization
+      }
+      
       experience {
         company_name
         place
@@ -219,12 +243,8 @@ query {
         published_at
       }
     }
-    
   }
 }
-
-
-
 
 
 @app.route('/graphql',methods=['POST'])

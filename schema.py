@@ -53,6 +53,14 @@ class Education:
     place: str
     country: str
 
+# Certifications
+@strawberry.input
+class Certifications:
+    certification_name: str
+    issue_date: MonthYear
+    issuing_organization: str
+    url: str
+
 # Experience
 @strawberry.input
 class Experience:
@@ -88,13 +96,14 @@ class Resume:
     job_title: Optional[str] = strawberry.UNSET 
     education: List[Education]
     skills: List[str]
+    certifications:Optional[List[Certifications]] = strawberry.UNSET
     experience: Optional[List[Experience]] = strawberry.UNSET
     projects: List[Projects]
     languages: Optional[List[str]] = strawberry.UNSET
     publications: Optional[List[Publication]] = strawberry.UNSET
 
 ####################################################################
-@strawberry.type
+@strawberry.type    
 class LinksOutput:
     website_name: str
     link: str
@@ -102,6 +111,14 @@ class LinksOutput:
 class MonthYearOutput:
     month: str
     year: int
+    
+#Certifications
+@strawberry.type
+class CertificationsOutput:
+    certification_name: str
+    issue_date: MonthYearOutput
+    issuing_organization: str
+    url: str
 
 # Experience
 @strawberry.type
@@ -145,6 +162,7 @@ class ResumeOutput:
     job_title: Optional[str] = strawberry.UNSET 
     education: List[EducationOutput]
     skills: List[str]
+    certifications: Optional[List[CertificationsOutput]] = strawberry.UNSET
     experience: Optional[List[ExperienceOutput]] = strawberry.UNSET
     projects: List[ProjectsOutput]
     languages: Optional[List[str]] = strawberry.UNSET
@@ -220,7 +238,6 @@ class Query:
     def get_my_details(info: Info, username: str) -> UserDetails:
         user = mongo.db.user_collection.find_one({'username': username})
         user_resume = mongo.db.resumes_collection.find_one({'username':username})
-        print(user_resume)
         if user and user_resume:
             resume_output = ResumeOutput(
                             _id=str(user_resume['_id']),
@@ -228,16 +245,16 @@ class Query:
                             email=user_resume['email'],
                             full_name=user_resume['full_name'],
                             links=[
-                                Links(website_name=link['website_name'], link=link['link'])
+                                LinksOutput(website_name=link['website_name'], link=link['link'])
                                 for link in user_resume['links']
                             ],
                             job_title=user_resume.get('job_title', None),
                             education=[
-                                Education(
+                                EducationOutput(
                                     institute=edu['institute'],
                                     type_of_study=edu['type_of_study'],
-                                    start_date=MonthYear(month=edu['start_date']['month'], year=edu['start_date']['year']),
-                                    end_date=MonthYear(month=edu['end_date']['month'], year=edu['end_date']['year']),
+                                    start_date=MonthYearOutput(month=edu['start_date']['month'], year=edu['start_date']['year']),
+                                    end_date=MonthYearOutput(month=edu['end_date']['month'], year=edu['end_date']['year']),
                                     percentage=edu['percentage'],
                                     place=edu['place'],
                                     country=edu['country']
@@ -245,20 +262,26 @@ class Query:
                                 for edu in user_resume['education']
                             ],
                             skills=user_resume['skills'],
+                            certifications=[CertificationsOutput(
+                                certification_name=certs['certification_name'],
+                                issue_date=MonthYearOutput(month=certs['issue_date']['month'],year=certs['issue_date']['year']),
+                                issuing_organization=certs['issuing_organization'],
+                                url=certs['url']
+                            )for certs in user_resume.get('certifications',[])],
                             experience=[
-                                Experience(
+                                ExperienceOutput(
                                     company_name=exp['company_name'],
                                     place=exp['place'],
                                     country=exp['country'],
-                                    start_date=MonthYear(month=exp['start_date']['month'], year=exp['start_date']['year']),
-                                    end_date=MonthYear(month=exp['end_date']['month'], year=exp['end_date']['year']),
+                                    start_date=MonthYearOutput(month=exp['start_date']['month'], year=exp['start_date']['year']),
+                                    end_date=MonthYearOutput(month=exp['end_date']['month'], year=exp['end_date']['year']),
                                     job_titles=exp['job_titles'],
                                     job_description=exp['job_description']
                                 )
                                 for exp in user_resume.get('experience', [])
                             ],
                             projects=[
-                                Projects(
+                                ProjectsOutput(
                                     project_name=proj['project_name'],
                                     tech_used=proj['tech_used'],
                                     description=proj['description']
@@ -267,9 +290,9 @@ class Query:
                             ],
                             languages=user_resume.get('languages', []),
                             publications=[
-                                Publication(
+                                PublicationOutput(
                                     title=pub['title'],
-                                    published_date=MonthYear(month=pub['published_date']['month'], year=pub['published_date']['year']),
+                                    published_date=MonthYearOutput(month=pub['published_date']['month'], year=pub['published_date']['year']),
                                     published_at=pub['published_at']
                                 )
                                 for pub in user_resume.get('publications', [])
