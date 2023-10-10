@@ -142,7 +142,7 @@ class PublicationOutput:
     title: str
     published_date: MonthYearOutput
     published_at: str
-
+    
 @strawberry.type
 class EducationOutput:
     institute: str
