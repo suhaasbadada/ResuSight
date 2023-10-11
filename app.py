@@ -1,7 +1,7 @@
 import os
 import strawberry
 from db import mongo
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 from flask_pymongo import PyMongo
 from strawberry.flask.views import GraphQLView
 from strawberryGQL.queries import Query
@@ -34,4 +34,4 @@ app.add_url_rule(
 
 @app.route('/')
 def hello_world():
-    return 'Hello, World!'
+    return render_template("resusight_homepage.html")
