@@ -2,7 +2,7 @@ from typing import List
 import strawberry
 from strawberry.types import Info
 from db import mongo
-from strawberryGQL.gql_schema import CertificationsOutput, EducationOutput, ExperienceOutput, LinksOutput, MonthYearOutput, ProjectsOutput, PublicationOutput, ResumeOutput, UserDetails
+from strawberryGQL.gql_schema import CertificationsOutput, EducationOutput, ExperienceOutput, JobDescription, LinksOutput, MonthYearOutput, ProjectsOutput, PublicationOutput, ResumeOutput, UserDetails
 
 @strawberry.type
 class Query:
@@ -76,9 +76,14 @@ class Query:
         return UserDetails(username=None,email=None,message="Not a registered user")
 
     @strawberry.field
-    def generate_interview_questions(info: Info, username: str) -> List[str]:
+    def generate_questions_resume(info: Info, username: str) -> List[str]:
         resume=mongo.db.resumes_collection.find_one({'username':username})
         print(type(resume))
         if resume:
             return ['q1','q2','q3'] # use openai api functions here to get questions
         return []
+    
+    @strawberry.field
+    def generate_questions_jd(info: Info, jobdescription: JobDescription) -> List[str]:
+        # upload jobdescription,  use openai api functions here to get questions
+        return ['q1','q2','q3']
