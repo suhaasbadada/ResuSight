@@ -3,13 +3,11 @@ import os
 import strawberry
 from db import mongo
 from flask import Flask, jsonify, render_template, request
-from flask_pymongo import PyMongo
 from strawberry.flask.views import GraphQLView
 from gpt.langchain_models import jd_questions
 from strawberryGQL.queries import Query
 from strawberryGQL.mutations import Mutation
 from strawberry.schema.config import StrawberryConfig
-from bson import json_util
 
 app=Flask(__name__)
 

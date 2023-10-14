@@ -80,7 +80,6 @@ class Query:
     @strawberry.field
     def generate_questions_resume(info: Info, username: str) -> List[str]:
         resume=mongo.db.resumes_collection.find_one({'username':username})
-        print(type(resume))
         if resume:
             return ['q1','q2','q3'] # use openai api functions here to get questions
         return []
@@ -88,5 +87,4 @@ class Query:
     @strawberry.field
     def generate_questions_jd(info: Info, job_description: str) -> List[str]:
         questions=jd_questions(job_description)
-        print(questions,type(questions),json.loads(questions))
         return json.loads(questions)['Questions']
