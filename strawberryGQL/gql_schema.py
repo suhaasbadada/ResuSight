@@ -172,9 +172,3 @@ class UserDetails:
     email: Optional[str] = strawberry.UNSET
     message: str
     resume: Optional[ResumeOutput] = strawberry.UNSET
-
-@strawberry.input
-class JobDescription:
-    job_title: str
-    company: Optional[str] = strawberry.UNSET
-    description: str

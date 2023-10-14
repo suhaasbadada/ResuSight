@@ -247,6 +247,101 @@ query{
 }
 
 
+JOB DESCRIPTIONS
+INPUT-1
+{
+We are looking to hire a Data Scientist to join our data team. You will take responsibility for managing our master data set, developing reports, and troubleshooting data issues. To do well in this role you need a very fine eye for detail, experience as a data analyst, and deep understanding of the popular data analysis tools and databases
+ 
+Your responsibilities: 
+
+ 
+Assist in building the analytics layer of our internal data platform.
+Perform ad-hoc analyses to support business initiatives.
+Develop machine learning models for decision-making.
+Collaborate with data engineers for data sourcing and preprocessing.
+Evaluate and improve algorithm and model efficiency.
+Conduct A/B tests for model validation.
+Communicate insights to non-technical stakeholders.
+
+
+Skill sets/Experience we require:
+
+ 
+Strong proficiency in Python and SQL.
+Knowledge of machine learning algorithms and data modeling.
+Analytical and problem-solving skills.
+Familiarity with data visualization tools.
+Experience with version control systems like Git.
+
+
+ 
+
+Pedigree: 
+
+ 
+Bachelors’ degree in Mathematics, Economics, Computer Science, Information Management or Statistics
+}
+
+INPUT-2
+{
+Good understanding of front-end technologies, including HTML5, CSS3, JavaScript, jQuery
+Experience building user interfaces for websites and/or web applications
+Experience designing and developing responsive design websites
+Comfortable working with debugging tools like Firebug, Chrome Inspector, etc.
+Ability to understand CSS changes and their ramifications to ensure consistent style across platforms and browsers
+Ability to convert comprehensive layouts and wireframes into working HTML pages
+Knowledge of how to interact with RESTful APIs and formats (JSON, XML)
+Proficient understanding of code versioning tools {{such as Git, SVN, and Mercurial}}
+Strong understanding of PHP back-end development
+{{Make sure to mention any frameworks, libraries, or any other technology relevant to your project}}
+
+Qualifications
+
+Bachelor's degree or equivalent experience in Computer Science or related field
+Development experience with programming languages
+SQL database or relational database skills
+}
+
+INPUT-3
+{
+  Artificial intelligences are much better at learning languages than humans. galois.ai lets everyone build up fluency in any language, by learning languages as machines do. https://www.galois-ai.com/
+
+
+We build on a passion for language learning and a lifelong experience of learning languages from zero to fluent 🤓, mixed with a scientific approach based on neuroscience research and machine learning understanding.
+
+
+galois.ai is looking for machine learning / natural language processing talents, we will love to hear about your experience and skills. Other remarkable profiles are of course of interest to us.
+
+
+Responsibilities
+
+Future work responsibilities might include, depending on your skills and the projects at hands:
+Work on architecting and prototyping machine learning algorithms, and developing technologies/architectures that make machine learning algorithms better suited for low power resource constraint implementations.
+Work in a team that is focused on innovation and pushing the boundaries of what is possible with resource constrained systems, by managing iterations of innovating, building, and testing ideas.
+Apply advanced statistical / ML methods and work with large, complex data sets, etc.
+Lead the development of a mobile / web application.
+
+
+Qualifications
+
+BSc/MSc/PhD in Machine Learning, Computer Science or a related quantitative field
+Experience as a ML Engineer, delivering and running ML models in production. Experience with machine Learning Frameworks (PyTorch, MXNet, Tensorflow, etc.)
+Very strong coding ability, experience in development in at least one mainstream programming language (Python, Java, C++ etc.)
+Excellent knowledge of natural language processing techniques and applications
+Creative thinking, passion, drive, ability to learn quickly
+Outstanding communication skills
+
+
+(Preferred)
+
+Experience building web and mobile apps from scratch
+Significant research and publication experience
+Experience in developing custom neural network architectures and/or loss functions.
+Experience building large-scale production ML models and systems with a track record of innovation and having taken large machine learning-based products, and features, from conception to successfully delivering value to customers in production.
+Experience with Kubernetes, CI/CD, Docker, code optimization, parallel programming, etc.
+}
+
+
 @app.route('/graphql',methods=['POST'])
 def graphql_view():
     if request.method=='POST':

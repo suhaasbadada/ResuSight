@@ -1,8 +1,10 @@
+import json
 from typing import List
 import strawberry
 from strawberry.types import Info
 from db import mongo
-from strawberryGQL.gql_schema import CertificationsOutput, EducationOutput, ExperienceOutput, JobDescription, LinksOutput, MonthYearOutput, ProjectsOutput, PublicationOutput, ResumeOutput, UserDetails
+from gpt.langchain_models import jd_questions
+from strawberryGQL.gql_schema import CertificationsOutput, EducationOutput, ExperienceOutput, LinksOutput, MonthYearOutput, ProjectsOutput, PublicationOutput, ResumeOutput, UserDetails
 
 @strawberry.type
 class Query:
@@ -84,6 +86,7 @@ class Query:
         return []
     
     @strawberry.field
-    def generate_questions_jd(info: Info, jobdescription: JobDescription) -> List[str]:
-        # upload jobdescription,  use openai api functions here to get questions
-        return ['q1','q2','q3']
+    def generate_questions_jd(info: Info, job_description: str) -> List[str]:
+        questions=jd_questions(job_description)
+        print(questions,type(questions),json.loads(questions))
+        return json.loads(questions)['Questions']
