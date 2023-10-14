@@ -1,12 +1,16 @@
+import json
 import os
 import strawberry
 from db import mongo
 from flask import Flask, jsonify, render_template, request
 from flask_pymongo import PyMongo
 from strawberry.flask.views import GraphQLView
+from gpt.langchain_test import hello_langchain, jd_questions
+from gpt.openai_test import gpt_test
 from strawberryGQL.queries import Query
 from strawberryGQL.mutations import Mutation
 from strawberry.schema.config import StrawberryConfig
+from bson import json_util
 
 app=Flask(__name__)
 
@@ -31,6 +35,39 @@ app.add_url_rule(
     view_func=GraphQLView.as_view("graphql_view", schema=schema,graphiql=True),
 )
 
+@app.route('/info/<username>',methods=['GET'])
+def get_my_details(username):
+    user = mongo.db.user_collection.find_one({'username': username})
+    user_resume = mongo.db.resumes_collection.find_one({'username':username}, {'_id': False})
+
+    if user and user_resume:
+        result = json.dumps(user_resume, default=json_util.default)
+        print(result)
+        return jsonify(user_resume)
+
+    return {"Message":"User not registered/Not uploaded resume"}
+
+@app.route('/generateQuestions/resume/<username>',methods=['GET'])
+def generate_questions_resume(username):
+    user = mongo.db.user_collection.find_one({'username': username})
+    user_resume = mongo.db.resumes_collection.find_one({'username':username}, {'_id': False})
+    # generate questions from openai here
+    return {"Questions":["q1","q2","q3"]}
+
+@app.route('/generateQuestions/jd',methods=['GET'])
+def generate_questions_jd():
+    return {"Questions":["q1","q2","q3"]}
+
+
+@app.route('/gptTest')
+def openaitest():
+    response=gpt_test()
+    return response
+
+@app.route('/lcTest')
+def lctest():
+    response=jd_questions()
+    return response
 
 @app.route('/')
 def hello_world():
