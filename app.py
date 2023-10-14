@@ -6,7 +6,6 @@ from flask import Flask, jsonify, render_template, request
 from flask_pymongo import PyMongo
 from strawberry.flask.views import GraphQLView
 from gpt.langchain_test import hello_langchain, jd_questions
-from gpt.openai_test import gpt_test
 from strawberryGQL.queries import Query
 from strawberryGQL.mutations import Mutation
 from strawberry.schema.config import StrawberryConfig
@@ -57,12 +56,6 @@ def generate_questions_resume(username):
 @app.route('/generateQuestions/jd',methods=['GET'])
 def generate_questions_jd():
     return {"Questions":["q1","q2","q3"]}
-
-
-@app.route('/gptTest')
-def openaitest():
-    response=gpt_test()
-    return response
 
 @app.route('/lcTest')
 def lctest():
