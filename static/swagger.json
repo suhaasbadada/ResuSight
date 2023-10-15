@@ -1,0 +1,96 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "ResuSight API",
+      "description": "API documentation for ResuSight",
+      "version": "1.0"
+    },
+    "paths": {
+      "/info/{username}": {
+        "get": {
+          "summary": "Get user details",
+          "parameters": [
+            {
+              "name": "username",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful operation",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "user_details": {
+                      "username": "example_user",
+                      "name": "John Doe",
+                      "email": "john@example.com"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/generateQuestions/resume/{username}": {
+        "get": {
+          "summary": "Generate questions for a user's resume",
+          "parameters": [
+            {
+              "name": "username",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful operation",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "Questions": ["q1", "q2", "q3"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/generateQuestions/jd": {
+        "post": {
+          "summary": "Generate questions for a job description",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful operation",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "Response": ["question1", "question2", "question3"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
