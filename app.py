@@ -139,6 +139,14 @@ def login():
 @app.route('/info/<username>',methods=['GET'])
 @token_required
 def get_my_details(username):
+    logged_in_user=g.user_data.get('user')
+
+    if logged_in_user is None:
+        return {"Message":"Login required."}
+
+    if username!=logged_in_user:
+        return {"Message":"Forbidden, you can access only your own information"}, 403
+
     user = mongo.db.user_collection.find_one({'username': username})
     user_resume = mongo.db.resumes_collection.find_one({'username':username}, {'_id': False})
 
@@ -150,6 +158,14 @@ def get_my_details(username):
 @app.route('/generateQuestions/resume/<username>',methods=['GET'])
 @token_required
 def generate_questions_resume(username):
+    logged_in_user=g.user_data.get('user')
+
+    if logged_in_user is None:
+        return {"Message":"Login required."}
+
+    if username!=logged_in_user:
+        return {"Message":"Forbidden, you can access only your own information"}, 403
+    
     user = mongo.db.user_collection.find_one({'username': username})
     user_resume = mongo.db.resumes_collection.find_one({'username':username}, {'_id': False})
     # generate questions from openai here
@@ -158,7 +174,9 @@ def generate_questions_resume(username):
 @app.route('/generateQuestions/jd',methods=['POST'])
 @token_required
 def generate_questions_jd():
+    logged_in_user=g.user_data.get('user')
     data=request.data.decode('utf-8')
+    # post data to mongo from this user with the data sent by the user
     if data:
         job_description=data
         questions=jd_questions(job_description)
