@@ -176,10 +176,31 @@ def generate_questions_resume(username):
 def generate_questions_jd():
     logged_in_user=g.user_data.get('user')
     data=request.data.decode('utf-8')
-    # post data to mongo from this user with the data sent by the user
+
+    if logged_in_user is None:
+        return {"Message":"Login required."}
+       
     if data:
         job_description=data
-        questions=jd_questions(job_description)
-        return {"Response":json.loads(questions)}
+       
+        response=jd_questions(job_description)
+        response_dict=json.loads(response)
+        jd_data={
+            "job_title":response_dict['job_title'],
+            "company_name":response_dict['company_name'],
+            "description":job_description
+        }
+
+        required_keys = {'job_title', 'company_name', 'description'}
+        if set(jd_data.keys()) != required_keys:
+            return {"Message": "Invalid Data"}
+        
+        response_dict['username']=logged_in_user
+        jd_data['submitted_by']=logged_in_user
+
+        mongo.db.jds_collection.insert_one(jd_data)
+        mongo.db.jd_questions_collection.insert_one(response_dict)
+
+        return {"Response":json.loads(response)}
         
     return {"Message": "Invalid data. Make sure to send text in the request body."}

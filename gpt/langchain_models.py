@@ -11,7 +11,7 @@ templates=[
     Answer: Let's think step by step. Give explanation why you picked these certain animals""",
 
     """Job Description: {job_description}
-    Answer: Return 5 questions that an interviewer could ask based on this job description as a JSON.
+    Answer: Return the job_title,company_name and 5 questions that an interviewer could ask based on this job description,as a JSON.
     """
 ]
 

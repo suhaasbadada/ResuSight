@@ -304,7 +304,7 @@ SQL database or relational database skills
 
 INPUT-3
 {
-  Artificial intelligences are much better at learning languages than humans. galois.ai lets everyone build up fluency in any language, by learning languages as machines do. https://www.galois-ai.com/
+Artificial intelligences are much better at learning languages than humans. galois.ai lets everyone build up fluency in any language, by learning languages as machines do. https://www.galois-ai.com/
 
 
 We build on a passion for language learning and a lifelong experience of learning languages from zero to fluent 🤓, mixed with a scientific approach based on neuroscience research and machine learning understanding.
