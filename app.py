@@ -8,6 +8,7 @@ from gpt.langchain_models import jd_questions
 from strawberryGQL.queries import Query
 from strawberryGQL.mutations import Mutation
 from strawberry.schema.config import StrawberryConfig
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_swagger_ui import get_swaggerui_blueprint
 
 app=Flask(__name__)
@@ -50,6 +51,62 @@ app.add_url_rule(
 @app.route('/')
 def hello_world():
     return render_template("resusight_homepage.html")
+
+@app.route('/register',methods=['POST'])
+def register():
+    user_input=request.get_json()
+
+    if not user_input:
+        return {"Message": "Invalid input data. Make sure to send JSON data in the request body."}, 400
+    
+    try:
+        username=user_input['username']
+        email=user_input['email']
+        password=user_input['password']
+    except:
+        return {"Message":"Invalid data sent."}
+
+    if not username or not email or not password:
+        return {"Message": "Username, email, and password are required fields."}, 400
+    
+    existing_user=mongo.db.user_collection.find_one({'$or': [{'username':username},{'email':email}]})
+
+    if existing_user:
+        return {"Message":"Username or email already exists."}, 400
+
+    hashed_password=generate_password_hash(password)
+    new_user={
+        'username':username,
+        'email':email,
+        'password':hashed_password
+    }
+
+    mongo.db.user_collection.insert_one(new_user)
+
+    return {"Message":"Registration Successful. Proceed to log in."}
+
+@app.route('/login',methods=['POST'])
+def login():
+    user_input=request.get_json()
+
+    if not user_input:
+        return {"Message": "Invalid input data. Make sure to send JSON data in the request body."}, 400
+    
+    try:
+        username=user_input['username']
+        password=user_input['password']
+    except:
+        return {"Message":"Invalid data sent."}
+
+    if not username or not password:
+        return {"Message": "Username and password are required fields."}, 400
+    
+    user=mongo.db.user_collection.find_one({'username':username})
+
+    if user and check_password_hash(user['password'],password):
+        return {"Message":"Login Successful."}
+
+    return {"Message":"Invalid Credentials"}
 
 @app.route('/info/<username>',methods=['GET'])
 def get_my_details(username):
