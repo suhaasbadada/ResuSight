@@ -1,8 +1,11 @@
+from datetime import datetime, timedelta
+from functools import wraps
 import json
 import os
+import jwt
 import strawberry
 from db import mongo
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, g, jsonify, render_template, request
 from strawberry.flask.views import GraphQLView
 from gpt.langchain_models import jd_questions
 from strawberryGQL.queries import Query
@@ -13,6 +16,8 @@ from flask_swagger_ui import get_swaggerui_blueprint
 
 app=Flask(__name__)
 
+app.config['SECRET_KEY']=os.getenv('JWT_KEY')
+app.config['JWT_EXPIRATION_DELTA']=timedelta(days=1)
 # Mongo Config
 MONGO_ATLAS_USERNAME=os.getenv('MONGO_ATLAS_USERNAME')
 MONGO_ATLAS_PASSWORD=os.getenv('MONGO_ATLAS_PASSWORD')
@@ -47,6 +52,28 @@ app.add_url_rule(
     "/graphql",
     view_func=GraphQLView.as_view("graphql_view", schema=schema,graphiql=True),
 )
+
+def token_required(func):
+    @wraps(func)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+
+        if not token:
+            return jsonify({'message': 'Token is missing'}), 401
+
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'],algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            return jsonify({'message': 'Token has expired'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'message': 'Invalid token'}), 401
+
+        g.user_data = data
+
+        return func(*args, **kwargs)
+
+    return decorated
+
 
 @app.route('/')
 def hello_world():
@@ -104,11 +131,13 @@ def login():
     user=mongo.db.user_collection.find_one({'username':username})
 
     if user and check_password_hash(user['password'],password):
-        return {"Message":"Login Successful."}
+        token = jwt.encode({'user': username, 'exp': datetime.utcnow() + app.config['JWT_EXPIRATION_DELTA']}, app.config['SECRET_KEY'], algorithm='HS256')
+        return {"Message":"Login Successful.",'token': token}
 
     return {"Message":"Invalid Credentials"}
 
 @app.route('/info/<username>',methods=['GET'])
+@token_required
 def get_my_details(username):
     user = mongo.db.user_collection.find_one({'username': username})
     user_resume = mongo.db.resumes_collection.find_one({'username':username}, {'_id': False})
@@ -119,6 +148,7 @@ def get_my_details(username):
     return {"Message":"User not registered/Not uploaded resume"}
 
 @app.route('/generateQuestions/resume/<username>',methods=['GET'])
+@token_required
 def generate_questions_resume(username):
     user = mongo.db.user_collection.find_one({'username': username})
     user_resume = mongo.db.resumes_collection.find_one({'username':username}, {'_id': False})
@@ -126,6 +156,7 @@ def generate_questions_resume(username):
     return {"Questions":["q1","q2","q3"]}
 
 @app.route('/generateQuestions/jd',methods=['POST'])
+@token_required
 def generate_questions_jd():
     data=request.data.decode('utf-8')
     if data:
