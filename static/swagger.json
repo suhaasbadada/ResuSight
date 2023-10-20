@@ -37,12 +37,20 @@
         }
       }
     },
-    "/generateQuestions/resume/{username}": {
+    "/generate/{username}/resume/{section}": {
       "get": {
         "summary": "Generate questions for a user's resume",
         "parameters": [
           {
             "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "section",
             "in": "path",
             "required": true,
             "schema": {
@@ -64,7 +72,7 @@
         }
       }
     },
-    "/generateQuestions/jd": {
+    "/generate/jd": {
       "post": {
         "summary": "Generate questions for a job description",
         "requestBody": {

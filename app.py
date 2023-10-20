@@ -155,34 +155,7 @@ def get_my_details(username):
 
     return {"Message":"User not registered/Not uploaded resume"}
 
-@app.route('/generateQuestions/resume/<username>',methods=['GET'])
-@token_required
-def generate_questions_resume(username):
-    logged_in_user=g.user_data.get('user')
-
-    if logged_in_user is None:
-        return {"Message":"Login required."}
-
-    if username!=logged_in_user:
-        return {"Message":"Forbidden, you can access only your own information"}, 403
-
-    user_resume = mongo.db.resumes_collection.find_one({'username':logged_in_user}, {'_id': False})
-
-    if user_resume is None:
-        return {"Message":"No resume found for this user."}
-
-    relevant_details_keys=["job_title","education","skills","experience","projects","languages", "publications"]
-
-    for r in relevant_details_keys:
-        if r in user_resume:
-            print(user_resume[r])
-
-    
-    response=resume_questions(json.dumps(user_resume))
-
-    return {"Response":json.loads(response)}
-
-@app.route('/generateQuestions/<username>/resume/<section>',methods=['GET'])
+@app.route('/generate/<username>/resume/<section>',methods=['GET'])
 @token_required
 def generate_section_questions_resume(username,section):
     logged_in_user=g.user_data.get('user')
@@ -212,7 +185,7 @@ def generate_section_questions_resume(username,section):
     return {"Response":json.loads(response)}
 
 
-@app.route('/generateQuestions/jd',methods=['POST'])
+@app.route('/generate/jd',methods=['POST'])
 @token_required
 def generate_questions_jd():
     logged_in_user=g.user_data.get('user')
