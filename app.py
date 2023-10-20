@@ -7,7 +7,7 @@ import strawberry
 from db import mongo
 from flask import Flask, g, jsonify, render_template, request
 from strawberry.flask.views import GraphQLView
-from gpt.langchain_models import jd_questions
+from gpt.langchain_models import jd_questions, resume_questions, resume_section_questions
 from strawberryGQL.queries import Query
 from strawberryGQL.mutations import Mutation
 from strawberry.schema.config import StrawberryConfig
@@ -165,11 +165,52 @@ def generate_questions_resume(username):
 
     if username!=logged_in_user:
         return {"Message":"Forbidden, you can access only your own information"}, 403
+
+    user_resume = mongo.db.resumes_collection.find_one({'username':logged_in_user}, {'_id': False})
+
+    if user_resume is None:
+        return {"Message":"No resume found for this user."}
+
+    relevant_details_keys=["job_title","education","skills","experience","projects","languages", "publications"]
+
+    for r in relevant_details_keys:
+        if r in user_resume:
+            print(user_resume[r])
+
     
-    user = mongo.db.user_collection.find_one({'username': username})
-    user_resume = mongo.db.resumes_collection.find_one({'username':username}, {'_id': False})
-    # generate questions from openai here
-    return {"Questions":["q1","q2","q3"]}
+    response=resume_questions(json.dumps(user_resume))
+
+    return {"Response":json.loads(response)}
+
+@app.route('/generateQuestions/<username>/resume/<section>',methods=['GET'])
+@token_required
+def generate_section_questions_resume(username,section):
+    logged_in_user=g.user_data.get('user')
+
+    if logged_in_user is None:
+        return {"Message":"Login required."}
+    
+    if section not in ['skills','experience','projects','publications','certifications']:
+        return {"Message":"Not allowed to generate questions for this section"}, 403
+
+    if username!=logged_in_user:
+        return {"Message":"Forbidden, you can access only your own information"}, 403
+
+    user_resume = mongo.db.resumes_collection.find_one({'username':logged_in_user}, {'_id': False})
+
+    if user_resume is None:
+        return {"Message":"No resume found for this user."}
+
+    if section in user_resume:
+        response=resume_section_questions(section,json.dumps(user_resume[section]))
+    
+    response_dict=json.loads(response)
+    response_dict['username']=logged_in_user
+    response_dict['section']=section
+    mongo.db.resume_questions_collection.insert_one(response_dict)
+
+    return {"Response":json.loads(response)}
+
 
 @app.route('/generateQuestions/jd',methods=['POST'])
 @token_required
