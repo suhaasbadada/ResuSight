@@ -2,7 +2,7 @@ from dataclasses import asdict
 import jwt
 import strawberry
 from strawberry.types import Info
-from db import mongo
+from mongoDatabase.db import mongo
 from strawberryGQL.gql_schema import AuthResponse, Resume, UploadResponse, User, UserInput
 from werkzeug.security import generate_password_hash, check_password_hash
 

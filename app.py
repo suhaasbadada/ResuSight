@@ -1,57 +1,32 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import wraps
 import json
-import os
 import jwt
-import strawberry
-from db import mongo
-from flask import Flask, g, jsonify, render_template, request
-from strawberry.flask.views import GraphQLView
-from gpt.langchain_models import jd_questions, resume_questions, resume_section_questions
-from strawberryGQL.queries import Query
-from strawberryGQL.mutations import Mutation
-from strawberry.schema.config import StrawberryConfig
+from initialise import create_app
+from mongoDatabase.db import mongo
+from flask import g, jsonify, render_template, request
+from gpt.langchain_models import jd_questions, resume_section_questions
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_swagger_ui import get_swaggerui_blueprint
 
-app=Flask(__name__)
+app=create_app()
 
-app.config['SECRET_KEY']=os.getenv('JWT_KEY')
-app.config['JWT_EXPIRATION_DELTA']=timedelta(days=1)
-# Mongo Config
-MONGO_ATLAS_USERNAME=os.getenv('MONGO_ATLAS_USERNAME')
-MONGO_ATLAS_PASSWORD=os.getenv('MONGO_ATLAS_PASSWORD')
-MONGO_ATLAS_CLUSTER_ADDR=os.getenv('MONGO_ATLAS_CLUSTER_ADDR')
-MONGO_ATLAS_DB_NAME=os.getenv('MONGO_ATLAS_DB_NAME')
+# class User(Document):
+#     username = mongodb_instance.StringField(required=True, unique=True)
+#     email = mongodb_instance.EmailField(required=True, unique=True)
+#     password = mongodb_instance.StringField(required=True)
 
-MONGO_URI=f"mongodb+srv://{MONGO_ATLAS_USERNAME}:{MONGO_ATLAS_PASSWORD}@{MONGO_ATLAS_CLUSTER_ADDR}.mongodb.net/{MONGO_ATLAS_DB_NAME}?retryWrites=true&w=majority"
-app.config['MONGO_URI']=MONGO_URI
-mongo.init_app(app)
+#     meta={
+#         'collection': 'user_collection'
+#     }
 
-# Swagger Config
-SWAGGER_URL = '/swagger'
-API_URL = '/static/swagger.json'
-
-swaggerui_blueprint = get_swaggerui_blueprint(
-    SWAGGER_URL,
-    API_URL,
-    config={
-        'app_name': 'ResuSight API Docs'
-    }
-)
-
-app.register_blueprint(swaggerui_blueprint)
-
-
-schema=strawberry.Schema(query=Query, mutation=Mutation, config=StrawberryConfig(auto_camel_case=False))
-class StrawberryView(GraphQLView):
-    schema = schema
-
-
-app.add_url_rule(
-    "/graphql",
-    view_func=GraphQLView.as_view("graphql_view", schema=schema,graphiql=True),
-)
+'''
+schema list
+user_collection - username, email, password
+resumes_collection
+resume_questions_collection - Questions (Array), username, section
+jds_collection - job_title, company_name, description, submitted_by
+jd_questions_collection - job_title, company_name, interview_questions (Array), username
+'''
 
 def token_required(func):
     @wraps(func)
@@ -102,6 +77,7 @@ def register():
         return {"Message":"Username or email already exists."}, 400
 
     hashed_password=generate_password_hash(password)
+    
     new_user={
         'username':username,
         'email':email,
@@ -109,6 +85,7 @@ def register():
     }
 
     mongo.db.user_collection.insert_one(new_user)
+
 
     return {"Message":"Registration Successful. Proceed to log in."}
 
@@ -176,11 +153,15 @@ def generate_section_questions_resume(username,section):
 
     if section in user_resume:
         response=resume_section_questions(section,json.dumps(user_resume[section]))
+
     
     response_dict=json.loads(response)
     response_dict['username']=logged_in_user
     response_dict['section']=section
-    mongo.db.resume_questions_collection.insert_one(response_dict)
+    filter = {'username': logged_in_user, 'section': section}
+    update = {'$set': response_dict}
+
+    mongo.db.resume_questions_collection.update_one(filter,update,upsert=True)
 
     return {"Response":json.loads(response)}
 
@@ -214,7 +195,7 @@ def generate_questions_jd():
 
         mongo.db.jds_collection.insert_one(jd_data)
         mongo.db.jd_questions_collection.insert_one(response_dict)
-
+        
         return {"Response":json.loads(response)}
         
     return {"Message": "Invalid data. Make sure to send text in the request body."}

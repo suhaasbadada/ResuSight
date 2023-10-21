@@ -2,7 +2,7 @@ import json
 from typing import List
 import strawberry
 from strawberry.types import Info
-from db import mongo
+from mongoDatabase.db import mongo
 from gpt.langchain_models import jd_questions
 from strawberryGQL.gql_schema import CertificationsOutput, EducationOutput, ExperienceOutput, LinksOutput, MonthYearOutput, ProjectsOutput, PublicationOutput, ResumeOutput, UserDetails
 
