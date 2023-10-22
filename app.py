@@ -118,7 +118,7 @@ def get_my_details(username):
 
     contributed_jds = mongo.db.jds_collection.find({"submitted_by": username}, condition)
     if contributed_jds:
-        return_this['Contributed JDS'] = [jd for jd in contributed_jds]
+        return_this['Contributed JDs'] = [jd for jd in contributed_jds]
 
     jd_questions = mongo.db.jd_questions_collection.find(query, condition)
     if jd_questions:
