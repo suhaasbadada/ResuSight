@@ -2,6 +2,7 @@ from datetime import datetime
 from functools import wraps
 import json
 import jwt
+from bson import json_util
 from initialise import create_app
 from mongoDatabase.db import mongo
 from flask import g, jsonify, render_template, request
@@ -113,24 +114,40 @@ def login():
 
     return {"Message":"Invalid Credentials"}
 
-@app.route('/info/<username>',methods=['GET'])
+@app.route('/info/<username>', methods=['GET'])
 @token_required
 def get_my_details(username):
-    logged_in_user=g.user_data.get('user')
+    logged_in_user = g.user_data.get('user')
 
     if logged_in_user is None:
-        return {"Message":"Login required."}
+        return {"Message": "Login required."}
 
-    if username!=logged_in_user:
-        return {"Message":"Forbidden, you can access only your own information"}, 403
+    if username != logged_in_user:
+        return {"Message": "Forbidden, you can access only your own information"}, 403
 
-    user = mongo.db.user_collection.find_one({'username': username})
-    user_resume = mongo.db.resumes_collection.find_one({'username':username}, {'_id': False})
+    query = {"username": username}
+    condition = {'_id': False}
+    user = mongo.db.user_collection.find_one(query)
+    user_resume = mongo.db.resumes_collection.find_one(query, condition)
+    return_this = {}
+
+    resume_questions = mongo.db.resume_questions_collection.find(query, {'_id': False, 'username': False})
+    if resume_questions:
+        return_this['Resume Questions'] = [question for question in resume_questions]
+
+    contributed_jds = mongo.db.jds_collection.find({"submitted_by": username}, condition)
+    if contributed_jds:
+        return_this['Contributed JDS'] = [jd for jd in contributed_jds]
+
+    jd_questions = mongo.db.jd_questions_collection.find(query, condition)
+    if jd_questions:
+        return_this['JD Questions'] = [question for question in jd_questions]
 
     if user and user_resume:
-        return jsonify(user_resume)
+        return_this['User Resume'] = user_resume
+        return return_this
 
-    return {"Message":"User not registered/Not uploaded resume"}
+    return {"Message": "User not registered/Not uploaded resume"}
 
 @app.route('/generate/<username>/resume/<section>',methods=['GET'])
 @token_required
