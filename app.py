@@ -2,7 +2,6 @@ from datetime import datetime
 from functools import wraps
 import json
 import jwt
-from bson import json_util
 from initialise import create_app
 from mongoDatabase.db import mongo
 from flask import g, jsonify, render_template, request
@@ -10,24 +9,6 @@ from gpt.langchain_models import jd_questions, resume_section_questions
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app=create_app()
-
-# class User(Document):
-#     username = mongodb_instance.StringField(required=True, unique=True)
-#     email = mongodb_instance.EmailField(required=True, unique=True)
-#     password = mongodb_instance.StringField(required=True)
-
-#     meta={
-#         'collection': 'user_collection'
-#     }
-
-'''
-schema list
-user_collection - username, email, password
-resumes_collection
-resume_questions_collection - Questions (Array), username, section
-jds_collection - job_title, company_name, description, submitted_by
-jd_questions_collection - job_title, company_name, interview_questions (Array), username
-'''
 
 def token_required(func):
     @wraps(func)
