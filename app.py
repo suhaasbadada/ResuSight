@@ -1,7 +1,9 @@
 from datetime import datetime
 from functools import wraps
 import json
+import os
 import jwt
+import requests
 from initialise import create_app
 from mongoDatabase.db import mongo
 from flask import g, jsonify, render_template, request
@@ -9,6 +11,7 @@ from gpt.langchain_models import jd_questions, resume_section_questions
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app=create_app()
+gql_url = os.getenv('GRAPHQL_URL')
 
 def token_required(func):
     @wraps(func)
@@ -39,37 +42,31 @@ def hello_world():
 @app.route('/register',methods=['POST'])
 def register():
     user_input=request.get_json()
-
-    if not user_input:
-        return {"Message": "Invalid input data. Make sure to send JSON data in the request body."}, 400
-    
-    try:
-        username=user_input['username']
-        email=user_input['email']
-        password=user_input['password']
-    except:
-        return {"Message":"Invalid data sent."}
+    username = user_input.get('username')
+    email = user_input.get('email')
+    password = user_input.get('password')
 
     if not username or not email or not password:
         return {"Message": "Username, email, and password are required fields."}, 400
     
-    existing_user=mongo.db.user_collection.find_one({'$or': [{'username':username},{'email':email}]})
+    mutation = f'''
+        mutation {{
+            register_user(user_input: {{
+                username: "{username}",
+                email: "{email}",
+                password: "{password}"
+            }}) {{
+                message
+            }}
+        }}
+    '''
+    response = requests.post(gql_url, json={'query': mutation})
 
-    if existing_user:
-        return {"Message":"Username or email already exists."}, 400
-
-    hashed_password=generate_password_hash(password)
-    
-    new_user={
-        'username':username,
-        'email':email,
-        'password':hashed_password
-    }
-
-    mongo.db.user_collection.insert_one(new_user)
-
-
-    return {"Message":"Registration Successful. Proceed to log in."}
+    if response.status_code == 200:
+        response_data = response.json()
+        return response_data, 200
+    else:
+        return {"Message": "Error registering user"}, 500
 
 @app.route('/login',methods=['POST'])
 def login():
