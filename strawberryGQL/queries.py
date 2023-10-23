@@ -1,13 +1,25 @@
 import json
 from typing import List
+import jwt
 import strawberry
 from strawberry.types import Info
 from mongoDatabase.db import mongo
 from gpt.langchain_models import jd_questions
-from strawberryGQL.gql_schema import CertificationsOutput, EducationOutput, ExperienceOutput, LinksOutput, MonthYearOutput, ProjectsOutput, PublicationOutput, ResumeOutput, UserDetails
-
+from strawberryGQL.gql_schema import AuthResponse, CertificationsOutput, EducationOutput, ExperienceOutput, LinksOutput, MonthYearOutput, ProjectsOutput, PublicationOutput, ResumeOutput, User, UserDetails
+from werkzeug.security import check_password_hash
 @strawberry.type
 class Query:
+    @strawberry.field
+    def login_user(info: Info,username: str, password: str) ->AuthResponse:
+        user=mongo.db.user_collection.find_one({'username':username})
+
+        if user and check_password_hash(user['password'],password):
+            user_info = {'username': user['username'], 'email': user['email']}
+            token = jwt.encode(user_info, "secret", algorithm="HS256")
+            return AuthResponse(message='Login Successful',user=User(username=user['username'], email=user['email']), token=token)
+        
+        return AuthResponse(message='Invalid Credentials', user=None, token=None)
+    
     @strawberry.field
     def get_my_details(info: Info, username: str) -> UserDetails:
         user = mongo.db.user_collection.find_one({'username': username})

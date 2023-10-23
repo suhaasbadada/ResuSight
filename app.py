@@ -84,13 +84,23 @@ def login():
     if not username or not password:
         return {"Message": "Username and password are required fields."}, 400
     
-    user=mongo.db.user_collection.find_one({'username':username})
-
-    if user and check_password_hash(user['password'],password):
-        token = jwt.encode({'user': username, 'exp': datetime.utcnow() + app.config['JWT_EXPIRATION_DELTA']}, app.config['SECRET_KEY'], algorithm='HS256')
-        return {"Message":"Login Successful.",'token': token}
-
-    return {"Message":"Invalid Credentials"}
+    query = f'''
+        query {{
+            login_user(
+                username: "{username}",
+                password: "{password}"
+            ) {{
+                token
+                message
+            }}
+        }}
+    '''
+    response = requests.post(gql_url, json={'query': query})
+    if response.status_code == 200:
+        response_data = response.json()
+        return response_data, 200
+    else:
+        return jsonify({"Message": "Error logging in"}), 500
 
 @app.route('/info/<username>', methods=['GET'])
 @token_required
