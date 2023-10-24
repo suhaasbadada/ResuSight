@@ -96,7 +96,7 @@ def login():
 @token_required
 def get_my_details(username):
     logged_in_user = g.user_data.get('user')
-
+    
     if logged_in_user is None:
         return {"Message": "Login required."}
 
