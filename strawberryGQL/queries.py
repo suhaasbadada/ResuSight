@@ -8,7 +8,7 @@ import strawberry
 from strawberry.types import Info
 from mongoDatabase.db import mongo
 from gpt.langchain_models import jd_questions
-from strawberryGQL.gql_schema import AuthResponse, CertificationsOutput, EducationOutput, ExperienceOutput, LinksOutput, MonthYearOutput, ProjectsOutput, PublicationOutput, ResumeOutput, User, UserDetails
+from strawberryGQL.gql_schema import AllDetails, AuthResponse, CertificationsOutput, ContributedJds, EducationOutput, ExperienceOutput, JdQuestions, LinksOutput, MonthYearOutput, ProjectsOutput, PublicationOutput, ResumeOutput, ResumeQuestions, User, UserDetails, UserResume
 from werkzeug.security import check_password_hash
 
 class TokenManager:
@@ -41,7 +41,7 @@ class Query:
         return AuthResponse(message='Invalid Credentials', user=None, token=None)
     
     @strawberry.field
-    def get_my_details(info: Info, username: str) -> str:
+    def get_my_details(info: Info, username: str) -> AllDetails:
         try:
             token=token_manager.get_token()
             headers = {"Authorization":token}
@@ -52,12 +52,82 @@ class Query:
             response = requests.get(f"http://127.0.0.1:5000/info/{username}",headers=headers)
             response.raise_for_status() 
             data = response.json()
-            print(data)
-            return str(data)
-        except requests.exceptions.RequestException as e:
-            return "Error, request issue"  
+
+            contributed_jds = [ContributedJds(**jd_data) for jd_data in data.get("Contributed JDs", [])]
+            jd_questions = [JdQuestions(**jd_question) for jd_question in data.get("JD Questions", [])]
+            resume_questions = [ResumeQuestions(**rq) for rq in data.get("Resume Questions", [])]
+
+            user_resume_data = data.get("User Resume", {})
+            user_resume=user_resume_data
+            print(type(user_resume),type(user_resume_data))
+            resume_output = UserResume(
+                            username=user_resume['username'],
+                            email=user_resume['email'],
+                            full_name=user_resume['full_name'],
+                            links=[
+                                LinksOutput(website_name=link['website_name'], link=link['link'])
+                                for link in user_resume['links']
+                            ],
+                            job_title=user_resume.get('job_title', None),
+                            education=[
+                                EducationOutput(
+                                    institute=edu['institute'],
+                                    type_of_study=edu['type_of_study'],
+                                    start_date=MonthYearOutput(month=edu['start_date']['month'], year=edu['start_date']['year']),
+                                    end_date=MonthYearOutput(month=edu['end_date']['month'], year=edu['end_date']['year']),
+                                    percentage=edu['percentage'],
+                                    place=edu['place'],
+                                    country=edu['country']
+                                )
+                                for edu in user_resume['education']
+                            ],
+                            skills=user_resume['skills'],
+                            certifications=[CertificationsOutput(
+                                certification_name=certs['certification_name'],
+                                issue_date=MonthYearOutput(month=certs['issue_date']['month'],year=certs['issue_date']['year']),
+                                issuing_organization=certs['issuing_organization'],
+                                url=certs['url']
+                            )for certs in user_resume.get('certifications',[])],
+                            experience=[
+                                ExperienceOutput(
+                                    company_name=exp['company_name'],
+                                    place=exp['place'],
+                                    country=exp['country'],
+                                    start_date=MonthYearOutput(month=exp['start_date']['month'], year=exp['start_date']['year']),
+                                    end_date=MonthYearOutput(month=exp['end_date']['month'], year=exp['end_date']['year']),
+                                    job_titles=exp['job_titles'],
+                                    job_description=exp['job_description']
+                                )
+                                for exp in user_resume.get('experience', [])
+                            ],
+                            projects=[
+                                ProjectsOutput(
+                                    project_name=proj['project_name'],
+                                    tech_used=proj['tech_used'],
+                                    description=proj['description']
+                                )
+                                for proj in user_resume['projects']
+                            ],
+                            languages=user_resume.get('languages', []),
+                            publications=[
+                                PublicationOutput(
+                                    title=pub['title'],
+                                    published_date=MonthYearOutput(month=pub['published_date']['month'], year=pub['published_date']['year']),
+                                    published_at=pub['published_at']
+                                )
+                                for pub in user_resume.get('publications', [])
+                            ]
+                        )
+            return AllDetails(
+                message="Data fetched successfully",
+                contributed_jds=contributed_jds,
+                jd_questions=jd_questions,
+                resume_questions=resume_questions,
+                user_resume=resume_output,
+            )
+         
         except Exception as e:
-            return "Error, an unexpected issue" 
+            return AllDetails(message="Error, an unexpected issue")
     
     @strawberry.field
     def logout_user(info: Info) -> str:

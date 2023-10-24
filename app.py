@@ -10,6 +10,8 @@ from flask import g, jsonify, render_template, request
 from gpt.langchain_models import jd_questions, resume_section_questions
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from strawberryGQL.queries import token_manager
+
 app=create_app()
 gql_url = os.getenv('GRAPHQL_URL')
 
@@ -88,6 +90,7 @@ def login():
 
     if user and check_password_hash(user['password'],password):
         token = jwt.encode({'user': username, 'exp': datetime.utcnow() + app.config['JWT_EXPIRATION_DELTA']}, app.config['SECRET_KEY'], algorithm='HS256')
+        token_manager.set_token(token)
         return {"Message":"Login Successful.",'token': token}
 
     return {"Message":"Invalid Credentials"}

@@ -179,3 +179,44 @@ class JobDescription:
     company: Optional[str] = strawberry.UNSET
     description: str
     submitted_by: str
+
+@strawberry.type
+class ContributedJds:
+    company_name: str
+    description: str
+    job_title:str
+    submitted_by: str
+
+@strawberry.type
+class ResumeQuestions:
+    Questions: List[str]
+    section: str
+
+@strawberry.type
+class JdQuestions:
+    company_name: str
+    interview_questions: List[str]
+    job_title: str
+    username: str
+@strawberry.type
+class UserResume:
+    username: str
+    email: str
+    full_name: str
+    links: List[LinksOutput]
+    job_title: Optional[str] = strawberry.UNSET 
+    education: List[EducationOutput]
+    skills: List[str]
+    certifications: Optional[List[CertificationsOutput]] = strawberry.UNSET
+    experience: Optional[List[ExperienceOutput]] = strawberry.UNSET
+    projects: List[ProjectsOutput]
+    languages: Optional[List[str]] = strawberry.UNSET
+    publications: Optional[List[PublicationOutput]] = strawberry.UNSET
+
+@strawberry.type
+class AllDetails:
+    message: str
+    contributed_jds: Optional[List[ContributedJds]] = strawberry.UNSET
+    jd_questions: Optional[List[JdQuestions]] = strawberry.UNSET
+    resume_questions: Optional[List[ResumeQuestions]] = strawberry.UNSET
+    user_resume: Optional[UserResume]= strawberry.UNSET
