@@ -5,6 +5,19 @@
     "description": "API documentation for ResuSight",
     "version": "1.0"
   },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
   "paths": {
     "/info/{username}": {
       "get": {
