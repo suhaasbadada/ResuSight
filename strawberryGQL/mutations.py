@@ -1,12 +1,9 @@
-from dataclasses import asdict
-from datetime import datetime, timedelta
-import os
-import jwt
 import strawberry
+from dataclasses import asdict
 from strawberry.types import Info
 from mongoDatabase.db import mongo
+from werkzeug.security import generate_password_hash
 from strawberryGQL.gql_schema import AuthResponse, Resume, UploadResponse, User, UserInput
-from werkzeug.security import generate_password_hash, check_password_hash
 
 @strawberry.type
 class Mutation:

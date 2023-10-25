@@ -1,15 +1,13 @@
-
-from datetime import timedelta
 import os
 import strawberry
-from mongoDatabase.db import mongo
 from flask import Flask
+from datetime import timedelta
+from mongoDatabase.db import mongo
 from strawberryGQL.queries import Query
 from strawberryGQL.mutations import Mutation
-from strawberry.schema.config import StrawberryConfig
 from strawberry.flask.views import GraphQLView
 from flask_swagger_ui import get_swaggerui_blueprint
-from mongoDatabase.db import mongo
+from strawberry.schema.config import StrawberryConfig
 
 schema=strawberry.Schema(query=Query, mutation=Mutation, config=StrawberryConfig(auto_camel_case=False))
 class StrawberryView(GraphQLView):

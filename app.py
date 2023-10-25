@@ -1,14 +1,14 @@
-from datetime import datetime
-from functools import wraps
 import json
 import os
 import jwt
 import requests
+from functools import wraps
+from datetime import datetime
 from initialise import create_app
 from mongoDatabase.db import mongo
+from werkzeug.security import check_password_hash
 from flask import g, jsonify, render_template, request
 from gpt.langchain_models import jd_questions, resume_section_questions
-from werkzeug.security import generate_password_hash, check_password_hash
 
 from strawberryGQL.queries import token_manager
 
@@ -21,11 +21,11 @@ def token_required(func):
         auth_header = request.headers.get('Authorization')
         token=auth_header
 
-        if "Bearer" in token:
-            token=auth_header[7:]
-
         if not token:
             return jsonify({'message': 'Token is missing'}), 401
+        
+        if "Bearer" in token:
+            token=auth_header[7:]
 
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'],algorithms=["HS256"])
@@ -40,7 +40,6 @@ def token_required(func):
 
     return decorated
 
-
 @app.route('/')
 def hello_world():
     return render_template("resusight_homepage.html")
@@ -48,7 +47,7 @@ def hello_world():
 @app.route('/register',methods=['POST'])
 def register():
     user_input=request.get_json()
-    username = user_input.get('username')
+    username = user_input.get('username')   
     email = user_input.get('email')
     password = user_input.get('password')
 
@@ -98,6 +97,18 @@ def login():
         return {"Message":"Login Successful.",'token': token}
 
     return {"Message":"Invalid Credentials"}
+
+@app.route('/logout',methods=['POST'])
+@token_required
+def logout():
+    logged_in_user=g.user_data.get('user')
+
+    if not logged_in_user:
+        return {'Message': 'No user data found'}, 401
+    
+    token_manager.delete_token()
+
+    return {"Message":"Logout Successful"}
 
 @app.route('/info/<username>', methods=['GET'])
 @token_required
@@ -166,7 +177,6 @@ def generate_section_questions_resume(username,section):
     mongo.db.resume_questions_collection.update_one(filter,update,upsert=True)
 
     return {"Response":json.loads(response)}
-
 
 @app.route('/generate/jd',methods=['POST'])
 @token_required

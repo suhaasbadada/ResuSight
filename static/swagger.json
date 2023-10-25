@@ -187,6 +187,26 @@
           }
         }
       }
+    },
+    "/logout": {
+      "post": {
+        "summary": "Logout",
+        "responses": {
+          "200": {
+            "description": "Logout successful"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "No user data found"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

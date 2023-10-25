@@ -1,15 +1,13 @@
-from datetime import datetime, timedelta
-import json
 import os
-from typing import List
 import jwt
 import requests
 import strawberry
 from strawberry.types import Info
 from mongoDatabase.db import mongo
-from gpt.langchain_models import jd_questions
-from strawberryGQL.gql_schema import AllDetails, AuthResponse, CertificationsOutput, ContributedJds, EducationOutput, ExperienceOutput, JdQuestions, LinksOutput, MonthYearOutput, ProjectsOutput, PublicationOutput, ResumeOutput, ResumeQuestions, User, UserDetails, UserResume
+from datetime import datetime, timedelta
 from werkzeug.security import check_password_hash
+from strawberryGQL.gql_schema import AllDetails, AuthResponse, CertificationsOutput, ContributedJds, EducationOutput, ExperienceOutput, JdQuestions, LinksOutput, MonthYearOutput, ProjectsOutput, PublicationOutput, ResumeOutput, ResumeQuestions, User, UserDetails, UserResume
+
 
 class TokenManager:
     def __init__(self):
@@ -59,7 +57,6 @@ class Query:
 
             user_resume_data = data.get("User Resume", {})
             user_resume=user_resume_data
-            print(type(user_resume),type(user_resume_data))
             resume_output = UserResume(
                             username=user_resume['username'],
                             email=user_resume['email'],
@@ -131,8 +128,16 @@ class Query:
     
     @strawberry.field
     def logout_user(info: Info) -> str:
-        if not token_manager.get_token():
-            return "Nobody Logged in"
-        
-        token_manager.delete_token()
-        return "Logout Successful"
+        token = token_manager.get_token()
+
+        if not token:
+            return "Invalid request"
+
+        try:
+            jwt.decode(token, os.getenv("JWT_KEY"), algorithms=['HS256'])
+            token_manager.delete_token()
+            return "Logout Successful"
+        except jwt.ExpiredSignatureError:
+            return "Token has expired. Please log in again."
+        except jwt.DecodeError:
+            return "Invalid token. Please log in again."
