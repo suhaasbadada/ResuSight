@@ -51,7 +51,7 @@ class Query:
             response = requests.get(f"{website_url}/info/{username}",headers=headers)
             response.raise_for_status() 
             data = response.json()
-
+            print("##############",data)
             contributed_jds = [ContributedJds(**jd_data) for jd_data in data.get("Contributed JDs", [])]
             jd_questions = [JdQuestions(**jd_question) for jd_question in data.get("JD Questions", [])]
             resume_questions = [ResumeQuestions(**rq) for rq in data.get("Resume Questions", [])]
