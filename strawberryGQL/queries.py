@@ -47,7 +47,8 @@ class Query:
             if not token:
                 return "No authorization token provided"
 
-            response = requests.get(f"http://127.0.0.1:5000/info/{username}",headers=headers)
+            website_url=os.getenv('WEBSITE_URL')
+            response = requests.get(f"{website_url}/info/{username}",headers=headers)
             response.raise_for_status() 
             data = response.json()
 
